@@ -70,7 +70,7 @@ List<String> recommendSongs(List<Sentiment> sentiments) {
 **Objective**: Enable in-app playback of recommended songs.
 
 **Steps**:
-1. Integrate with a music API (e.g., Spotify or Apple Music).
+1. Integrate with a music API (e.g., Spotify).
 2. Implement playback controls (play, pause, stop).
 3. Handle API authentication and permissions.
 

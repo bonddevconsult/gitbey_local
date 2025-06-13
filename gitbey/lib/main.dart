@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io';
 import 'github_service.dart';
+import 'song_recommendation_service.dart';
+import 'music_player.dart';
+import 'spotify_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter bindings are initialized
@@ -40,10 +43,17 @@ class GitHubHandleInputPage extends StatefulWidget {
 class _GitHubHandleInputPageState extends State<GitHubHandleInputPage> {
   final TextEditingController _githubHandleController = TextEditingController();
   final GitHubService _gitHubService = GitHubService(dotenv.env['GITHUB_PERSONAL_ACCESS_TOKEN'] ?? ''); // Use environment variable for token
+  final SongRecommendationService _songRecommendationService = SongRecommendationService();
+  final SpotifyService _spotifyService = SpotifyService(
+    clientId: dotenv.env['SPOTIFY_CLIENT_ID'] ?? '',
+    clientSecret: dotenv.env['SPOTIFY_CLIENT_SECRET'] ?? '',
+  );
   bool _isValid = true;
   List<String> _commitMessages = [];
   String? _error;
   Map<String, int> _sentimentScores = {}; // Update type to match analyzeSentiment output
+  List<String> _recommendedTrackUris = [];
+  List<String> _recommendedTrackNames = [];
 
   void _validateInput() {
     print('Validating input: ${_githubHandleController.text}');
@@ -59,18 +69,29 @@ class _GitHubHandleInputPageState extends State<GitHubHandleInputPage> {
     });
 
     try {
+      await _spotifyService.authenticate();
       final commits = await _gitHubService.fetchCommitMessages(_githubHandleController.text);
       print('Fetched commits: $commits');
 
       final sentimentScores = _gitHubService.analyzeSentiment(commits);
       print('Sentiment analysis: $sentimentScores');
 
+      final recommendedSongs = _songRecommendationService.recommendSongs(sentimentScores);
+      print('Recommended songs: $recommendedSongs');
+
+      final trackData = await Future.wait(recommendedSongs.map((song) async {
+        final trackUri = await _spotifyService.fetchTrackUri(song);
+        return {'uri': trackUri, 'name': song};
+      }));
+
       setState(() {
         _commitMessages = commits;
-        _sentimentScores = sentimentScores; // Add sentiment scores to state
+        _sentimentScores = sentimentScores;
+        _recommendedTrackUris = trackData.map((data) => data['uri'] as String).toList();
+        _recommendedTrackNames = trackData.map((data) => data['name'] as String).toList();
       });
     } catch (e) {
-      print('Error fetching commits: $e');
+      print('Error fetching commits or tracks: $e');
       setState(() {
         _error = e.toString();
       });
@@ -122,10 +143,22 @@ class _GitHubHandleInputPageState extends State<GitHubHandleInputPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              Text('Sentiment Analysis Results:'),
-              Text('Happy: ${_sentimentScores['happy']}'),
-              Text('Frustrated: ${_sentimentScores['frustrated']}'),
-              Text('Productive: ${_sentimentScores['productive']}'),
+              Text('Recommended Songs:'),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _recommendedTrackNames.length,
+                  itemBuilder: (context, index) {
+                    return Column(
+                      children: [
+                        ListTile(
+                          title: Text(_recommendedTrackNames[index]), // Display the track name
+                        ),
+                        MusicPlayer(trackUri: _recommendedTrackUris[index]), // Use the track URI for playback
+                      ],
+                    );
+                  },
+                ),
+              ),
             ],
           ],
         ),
