@@ -3,10 +3,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:io';
 import 'github_service.dart';
 import 'song_recommendation_service.dart';
-import 'music_player.dart';
 import 'spotify_service.dart';
 
 Future<void> main() async {
@@ -51,9 +49,8 @@ class _GitHubHandleInputPageState extends State<GitHubHandleInputPage> {
   bool _isValid = true;
   List<String> _commitMessages = [];
   String? _error;
-  Map<String, int> _sentimentScores = {}; // Update type to match analyzeSentiment output
-  List<String> _recommendedTrackUris = [];
   List<String> _recommendedTrackNames = [];
+  List<String> _recommendedTrackImages = [];
 
   void _validateInput() {
     print('Validating input: ${_githubHandleController.text}');
@@ -81,14 +78,16 @@ class _GitHubHandleInputPageState extends State<GitHubHandleInputPage> {
 
       final trackData = await Future.wait(recommendedSongs.map((song) async {
         final trackUri = await _spotifyService.fetchTrackUri(song);
-        return {'uri': trackUri, 'name': song};
+        final trackImage = await _spotifyService.fetchTrackImage(song);
+        print('fetchedtrackimage $trackImage '); // Fetch track image
+        return {'uri': trackUri, 'name': song, 'image': trackImage};
       }));
 
       setState(() {
         _commitMessages = commits;
-        _sentimentScores = sentimentScores;
-        _recommendedTrackUris = trackData.map((data) => data['uri'] as String).toList();
+        trackData.forEach((data) => print('Track image: ${data['image']}'));
         _recommendedTrackNames = trackData.map((data) => data['name'] as String).toList();
+        _recommendedTrackImages = trackData.map((data) => data['image'] as String).toList();
       });
     } catch (e) {
       print('Error fetching commits or tracks: $e');
@@ -108,53 +107,82 @@ class _GitHubHandleInputPageState extends State<GitHubHandleInputPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Input Section
             TextField(
               controller: _githubHandleController,
               decoration: InputDecoration(
                 labelText: 'GitHub Handle',
+                border: OutlineInputBorder(),
                 errorText: _isValid ? null : 'Invalid handle',
               ),
               onChanged: (value) => _validateInput(),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _isValid ? _fetchCommits : null,
-              child: const Text('Submit'),
+            Center(
+              child: ElevatedButton(
+                onPressed: _isValid ? _fetchCommits : null,
+                child: const Text('Submit'),
+              ),
             ),
+
+            // Error Message Section
             if (_error != null) ...[
               const SizedBox(height: 20),
-              Text(
-                'Error: $_error',
-                style: const TextStyle(color: Colors.red),
+              Center(
+                child: Text(
+                  'Error: $_error',
+                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
+
+            // Commit Messages Section
             if (_commitMessages.isNotEmpty) ...[
               const SizedBox(height: 20),
+              const Text(
+                'Commit Messages:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
               Expanded(
                 child: ListView.builder(
                   itemCount: _commitMessages.length,
                   itemBuilder: (context, index) {
-                    print('Displaying commit message: ${_commitMessages[index]}');
-                    return ListTile(
-                      title: Text(_commitMessages[index]),
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 5),
+                      child: ListTile(
+                        title: Text(_commitMessages[index]),
+                      ),
                     );
                   },
                 ),
               ),
+
+              // Recommended Songs Section
               const SizedBox(height: 20),
-              Text('Recommended Songs:'),
+              const Text(
+                'Recommended Songs:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
               Expanded(
                 child: ListView.builder(
                   itemCount: _recommendedTrackNames.length,
                   itemBuilder: (context, index) {
-                    return Column(
-                      children: [
-                        ListTile(
-                          title: Text(_recommendedTrackNames[index]), // Display the track name
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 5),
+                      child: ListTile(
+                        leading: Image.network(
+                          _recommendedTrackImages[index],
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
                         ),
-                        MusicPlayer(trackUri: _recommendedTrackUris[index]), // Use the track URI for playback
-                      ],
+                        title: Text(_recommendedTrackNames[index]),
+                        subtitle: const Text('Tap to play or pause'),
+                      ),
                     );
                   },
                 ),

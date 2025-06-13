@@ -55,4 +55,27 @@ class SpotifyService {
       throw Exception('Failed to fetch track URI: ${response.statusCode}');
     }
   }
+
+  // Fetch track image URL based on song name
+  Future<String> fetchTrackImage(String songName) async {
+    if (accessToken == null) {
+      throw Exception('Spotify access token is not available. Please authenticate first.');
+    }
+
+    final encodedSongName = Uri.encodeComponent(songName); // URL-encode the song name
+    final url = 'https://api.spotify.com/v1/search?q=$encodedSongName&type=track&limit=1';
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final trackImage = data['tracks']['items'][0]['album']['images'][0]['url'];
+      print('Fetched track image: $trackImage');
+      return trackImage;
+    } else {
+      throw Exception('Failed to fetch track image: ${response.statusCode}');
+    }
+  }
 }
