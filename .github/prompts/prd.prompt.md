@@ -13,6 +13,7 @@ FIRST:
 - Consider edge cases that may not be included in my original proposal.
 - Organize requirements logically, and break them down into units that would make sense as user stories.
 - Raise any important high-level technical considerations, like platforms, languages, frameworks, and overall architecture details
+- Use flutter as the framework for cross-platform development
 
 NEXT:
 - Iterate with me until I tell you I am satisfied.
@@ -20,7 +21,7 @@ NEXT:
 FINALLY:
 - Once I tell you I am ready, create a plan (or update an existing plan) and use the #tool:github create issue tool to create an issue with this proposal and title: Spec.
 
-The correct repo is githubevents/gitbey
+The correct repo is bonddevconsult/gitbey_local
 
 ```
 # Project Name
@@ -37,4 +38,4 @@ The correct repo is githubevents/gitbey
 -Provide a basic MVP scope that could be delivered quickly to validate this idea.
 ```
 
-Output your plan in the directory "../../docs/idea.md"
+Output your plan in the directory "../../docs/prd.md"

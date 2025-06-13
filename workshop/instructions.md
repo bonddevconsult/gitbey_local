@@ -21,8 +21,8 @@ Before starting the workshop, ensure you have:
 #### Step 1: Fork and Clone Repository
 ```bash
 # Fork the repository on GitHub, then:
-git clone https://github.com/githubevents/gitbey 
-cd gitbey
+git clone https://github.com/bonddevconsult/gitbey_local
+cd gitbey_local
 ```
 
 #### Step 2: Configure MCP Servers
@@ -50,7 +50,7 @@ Follow instructions from '.github/prompts/research.prompt.md'
 #### Step 6: Generate Project Proposal
 ```bash
 # Run the new project prompt
-Follow instructions from '.github/prompts/new.prompt.md'
+Follow instructions from '.github/prompts/prd.prompt.md'
 ```
 
 #### Step 7: Create Implementation Plan
@@ -63,7 +63,7 @@ Follow instructions from '.github/prompts/plan.prompt.md'
 #### Step 8: Create GitHub Issues
 ```bash
 # Create project tracking issues
-Prompt: "create an issue in this repo for this feature"
+Prompt: "create an issue in this repo for a feature"
 ```
 
 #### Step 9: Generate Feature Specifications

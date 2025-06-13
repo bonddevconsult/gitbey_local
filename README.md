@@ -84,3 +84,19 @@ This workshop is licensed under [MIT License](LICENSE) - feel free to use it for
 - **GitHub** - For the robust API and Models platform
 - **Workshop Contributors** - Everyone who helped make this possible
 
+
+# Upddates from a dev's perspective
+
+## Some Notes
+
+- Use the workshop instructions if starting over from scratch
+- I do not have an apple developer account nor do I have a spotify premium account so it isn't deployed anywhere & the buttons don't work in the demo. But, they _should_ have worked if I had a premium account token
+- There was not a ton of perplexity use in the project. I wouldn't pay for a token for this much, maybe use a free alternative if one exists.
+- I'd never used Dart or flutter before the presentation. It is a pretty ergonomic experience to be writing to multiple targets at one time. 
+- I think the agent functioned moderately well with light guidance
+- Building the web target in flutter requires either having google chrome, or running `flutter run -d web-server` separately from the other build
+- Simulator must be running for flutter to connect to the ios target
+
+## Further research
+ - I would investigate a design pattern that makes the frontend design come out less horrible
+ - Determine how to get tests working
